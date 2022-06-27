@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>License Reader</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+  </style>
+</head>
+
+<body>
+
+<main>
+<h1>License Reader</h1>
+
+<form id="reader" name="reader">
+  <p>
+    <select id="license" name="license" required>
+      <option value="Apache">Apache</option>
+      <option value="GNU">GNU</option>
+      <option value="MIT" selected>MIT</option>
+      <option value="Mozilla">Mozilla</option>
+    </select>
+
+    <input type="submit" value="Read">
+  </p>
+
+  <pre id="licenseText"></pre>
+</form>
+
+<h2>Source</h2>
+
+<p><a href="https://choosealicense.com/">Choose a License</a>.</p>
+
+</main>
+
+<script>
+const form = document.querySelector('#reader');
+const licenseText = document.querySelector('#licenseText');
+
+/*
+ * Map a string name to its string license text.
+ */
+const LICENSE_MAP = new Map([
+  ['Apache', `Grant of Copyright License. Subject to the terms and conditions of
+this License, each Contributor hereby grants to You a perpetual,
+worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+copyright license to reproduce, prepare Derivative Works of,
+publicly display, publicly perform, sublicense, and distribute the
+Work and such Derivative Works in Source or Object form.`],
+  ['GNU', `The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.`],
+  ['MIT', `Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`],
+  ['Mozilla', `Each Contributor hereby grants You a world-wide, royalty-free,
+non-exclusive license`]
+]);
+
+window.addEventListener('load', (event) => {
+  licenseText.textContent = LICENSE_MAP.get(form.license.value);
+});
+document.querySelector('#license').addEventListener('change', (event) => {
+  licenseText.textContent = LICENSE_MAP.get(form.license.value);
+});
+form.addEventListener('submit', (event) => {
+  let utterance = new SpeechSynthesisUtterance(licenseText.textContent),
+      voices = window.speechSynthesis.getVoices();
+
+  if (voices.length > 0) {
+    utterance.voice = voices[0];
+    window.speechSynthesis.speak(utterance);
+  }
+
+  event.preventDefault();
+});
+</script>
+</body>
+
+</html>
