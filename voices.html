@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voices</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+  </style>
+</head>
+
+<body>
+
+<h1>Voices</h1>
+
+<output>
+</output>
+
+<script>
+window.addEventListener('load', (event) => {
+  const output = document.querySelector('output');
+  const voices = window.speechSynthesis.getVoices();
+
+  if (voices.length <= 0) {
+    let paragraph = document.createElement('p');
+    paragraph.appendChild(document.createTextNode('No voice found.'));
+    output.appendChild(paragraph);
+  }
+  else {
+    let list = document.createElement('ol');
+    for (let voice of voices) {
+      let item = document.createElement('li');
+      item.appendChild(document.createTextNode(`${ voice.name } (${ voice.lang })`));
+      list.appendChild(item);
+    }
+    output.appendChild(list);
+  }
+});
+</script>
+</body>
+
+</html>
