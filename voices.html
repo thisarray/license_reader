@@ -17,14 +17,16 @@ body {
 
 <h1>Voices</h1>
 
-<output>
-</output>
+<output></output>
 
 <script>
-window.addEventListener('load', (event) => {
-  const output = document.querySelector('output');
-  const voices = window.speechSynthesis.getVoices();
+const output = document.querySelector('output');
+const speaker = window.speechSynthesis;
 
+function getVoices() {
+  let voices = speaker.getVoices();
+
+  output.innerHTML = '';
   if (voices.length <= 0) {
     let paragraph = document.createElement('p');
     paragraph.appendChild(document.createTextNode('No voice found.'));
@@ -39,6 +41,17 @@ window.addEventListener('load', (event) => {
     }
     output.appendChild(list);
   }
+}
+
+window.addEventListener('load', (event) => {
+  getVoices();
+});
+
+/*
+ * Listen for changes in server-side synthesis when the voices are determined asynchronously.
+ */
+speaker.addEventListener('voiceschanged', (event) => {
+  getVoices();
 });
 </script>
 </body>
