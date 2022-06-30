@@ -27,7 +27,10 @@ body {
       <option value="Mozilla">Mozilla</option>
     </select>
 
-    <input type="submit" value="Read">
+    <button type="button" id="read">Read</button>
+    <button type="button" id="pause">Pause</button>
+    <button type="button" id="resume">Resume</button>
+    <button type="button" id="cancel">Cancel</button>
   </p>
 
   <pre id="licenseText"></pre>
@@ -42,6 +45,11 @@ body {
 <script>
 const form = document.querySelector('#reader');
 const licenseText = document.querySelector('#licenseText');
+const read = document.querySelector('#read');
+const pause = document.querySelector('#pause');
+const resume = document.querySelector('#resume');
+const cancel = document.querySelector('#cancel');
+const speaker = window.speechSynthesis;
 
 /*
  * Map a string name to its string license text.
@@ -85,16 +93,23 @@ window.addEventListener('load', (event) => {
 document.querySelector('#license').addEventListener('change', (event) => {
   licenseText.textContent = LICENSE_MAP.get(form.license.value);
 });
-form.addEventListener('submit', (event) => {
+read.addEventListener('click', (event) => {
   let utterance = new SpeechSynthesisUtterance(licenseText.textContent),
-      voices = window.speechSynthesis.getVoices();
+      voices = speaker.getVoices();
 
   if (voices.length > 0) {
     utterance.voice = voices[0];
-    window.speechSynthesis.speak(utterance);
+    speaker.speak(utterance);
   }
-
-  event.preventDefault();
+});
+pause.addEventListener('click', (event) => {
+  speaker.pause();
+});
+resume.addEventListener('click', (event) => {
+  speaker.resume();
+});
+cancel.addEventListener('click', (event) => {
+  speaker.cancel();
 });
 </script>
 </body>
