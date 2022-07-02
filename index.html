@@ -20,20 +20,31 @@ body {
 
 <form id="reader" name="reader">
   <p>
+    <label>Read the
     <select id="license" name="license" required>
       <option value="Apache">Apache</option>
       <option value="GNU">GNU</option>
       <option value="MIT" selected>MIT</option>
       <option value="Mozilla">Mozilla</option>
     </select>
+    license</label>
+  </p>
 
+  <p>
+    <label>in the voice of
+    <select id="voiceList" name="voiceList" required>
+    </select>
+    </label>
+  </p>
+
+  <pre id="licenseText"></pre>
+
+  <p>
     <button type="button" id="read">Read</button>
     <button type="button" id="pause">Pause</button>
     <button type="button" id="resume">Resume</button>
     <button type="button" id="cancel">Cancel</button>
   </p>
-
-  <pre id="licenseText"></pre>
 </form>
 
 <h2>Source</h2>
@@ -44,6 +55,7 @@ body {
 
 <script>
 const form = document.querySelector('#reader');
+const voiceList = document.querySelector('#voiceList');
 const licenseText = document.querySelector('#licenseText');
 const read = document.querySelector('#read');
 const pause = document.querySelector('#pause');
@@ -87,7 +99,37 @@ SOFTWARE.`],
 non-exclusive license`]
 ]);
 
+/*
+ * Populate #voiceList with the available voices.
+ */
+function getVoices() {
+  let voices = speaker.getVoices(),
+      markup = [],
+      i = 0,
+      language;
+
+  if (voices.length > 0) {
+    for (let voice of voices) {
+      if ((language == null) || (!voice.lang.toLowerCase().startsWith(language))) {
+        // If first voice or voice is for a new language
+        if (language != null) {
+          markup.push('      </optgroup>');
+        }
+        language = voice.lang.substring(0, 2).toLowerCase();
+        markup.push(`      <optgroup label="${ voice.name.substring(0, voice.name.indexOf(' ')) }">`);
+      }
+      markup.push(`        <option value="${ i }">${ voice.name } (${ voice.lang })</option>`);
+      i++;
+    }
+    if (language != null) {
+      markup.push('      </optgroup>');
+    }
+    voiceList.innerHTML = markup.join('\n');
+  }
+}
+
 window.addEventListener('load', (event) => {
+  getVoices();
   licenseText.textContent = LICENSE_MAP.get(form.license.value);
 });
 document.querySelector('#license').addEventListener('change', (event) => {
@@ -98,7 +140,7 @@ read.addEventListener('click', (event) => {
       voices = speaker.getVoices();
 
   if (voices.length > 0) {
-    utterance.voice = voices[0];
+    utterance.voice = voices[parseInt(form.voiceList.value, 10)];
     speaker.speak(utterance);
   }
 });
@@ -110,6 +152,13 @@ resume.addEventListener('click', (event) => {
 });
 cancel.addEventListener('click', (event) => {
   speaker.cancel();
+});
+
+/*
+ * Listen for changes in server-side synthesis when the voices are determined asynchronously.
+ */
+speaker.addEventListener('voiceschanged', (event) => {
+  getVoices();
 });
 </script>
 </body>
