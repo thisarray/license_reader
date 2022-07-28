@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pirate Reader</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+  </style>
+</head>
+
+<body>
+
+<main>
+<h1>Pirate Reader</h1>
+
+<form id="reader" name="reader">
+  <h2><label for="normal">Landlubber Speak</label></h2>
+
+  <textarea id="normal" name="normal" rows="10" cols="80"></textarea>
+
+  <p>
+    <label>in the voice of
+    <select id="voiceList" name="voiceList" required>
+    </select>
+    </label>
+  </p>
+
+  <p>
+    <button type="button" id="read">Read</button>
+    <button type="button" id="pause">Pause</button>
+    <button type="button" id="resume">Resume</button>
+    <button type="button" id="cancel">Cancel</button>
+  </p>
+</form>
+
+<h2>Pirate Speak</h2>
+
+<pre id="pirate"></pre>
+
+</main>
+
+<script>
+const form = document.querySelector('#reader');
+const voiceList = document.querySelector('#voiceList');
+const pirate = document.querySelector('#pirate');
+const read = document.querySelector('#read');
+const pause = document.querySelector('#pause');
+const resume = document.querySelector('#resume');
+const cancel = document.querySelector('#cancel');
+const speaker = window.speechSynthesis;
+
+/*
+ * Array of Array of regular expression and replacement to transform normal text to pirate speak.
+ */
+const PIRATE_SPEAK = [
+  // This rule is first to avoid the " was " rule obscuring it
+  [/was\s(\w+)ed(\s)/g, 'be $1ing$2'],
+
+  // General word replacement rules
+  [/beer/gi, 'grog'],
+  [/friend/gi, 'matey'],
+  [/hello/gi, 'ahoy'],
+  [/my /gi, 'me '],
+  [/ov/gi, 'ubb'],
+  [/quickly/gi, 'smartly'],
+  [/stop/gi, 'avast'],
+  [/yes/gi, 'aye'],
+  [/you/gi, 'ye'],
+  [/your /gi, 'year '],
+  [/ for /g, ' fur '],
+  [/ is /g, ' be '],
+  [/ was /g, ' be '],
+  [/ are /g, ' be '],
+  [/ were /g, ' be '],
+
+  [/^/, 'R d r r me hearties. '],
+  [/(\w+)!(\s)/g, '$1! Yo ho ho!$2']
+];
+
+/*
+ * Populate #voiceList with the available voices.
+ */
+function getVoices() {
+  let voices = speaker.getVoices(),
+      markup = [],
+      i = 0,
+      language;
+
+  if (voices.length > 0) {
+    for (let voice of voices) {
+      if ((language == null) || (!voice.lang.toLowerCase().startsWith(language))) {
+        // If first voice or voice is for a new language
+        if (language != null) {
+          markup.push('      </optgroup>');
+        }
+        language = voice.lang.substring(0, 2).toLowerCase();
+        markup.push(`      <optgroup label="${ voice.name.substring(0, voice.name.indexOf(' ')) }">`);
+      }
+      markup.push(`        <option value="${ i }">${ voice.name } (${ voice.lang })</option>`);
+      i++;
+    }
+    if (language != null) {
+      markup.push('      </optgroup>');
+    }
+    voiceList.innerHTML = markup.join('\n');
+  }
+}
+
+function normal_to_pirate(normal) {
+  for (let [regex, replacement] of PIRATE_SPEAK) {
+    normal = normal.replace(regex, replacement);
+  }
+  return normal;
+}
+
+window.addEventListener('load', (event) => {
+  getVoices();
+});
+read.addEventListener('click', (event) => {
+  let pirateText = normal_to_pirate(form.normal.value),
+      utterance = new SpeechSynthesisUtterance(pirateText),
+      voices = speaker.getVoices();
+
+  pirate.textContent = pirateText;
+  if (voices.length > 0) {
+    utterance.voice = voices[parseInt(form.voiceList.value, 10)];
+    speaker.speak(utterance);
+  }
+});
+pause.addEventListener('click', (event) => {
+  speaker.pause();
+});
+resume.addEventListener('click', (event) => {
+  speaker.resume();
+});
+cancel.addEventListener('click', (event) => {
+  speaker.cancel();
+});
+
+/*
+ * Listen for changes in server-side synthesis when the voices are determined asynchronously.
+ */
+speaker.addEventListener('voiceschanged', (event) => {
+  getVoices();
+});
+</script>
+</body>
+
+</html>
