@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number Reader</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+  </style>
+</head>
+
+<body>
+
+<main>
+<h1>Number Reader</h1>
+
+<form id="reader" name="reader">
+  <p>
+    <label>Read the number
+    <input type="text" id="amount" name="amount" autofocus required maxlength="5" minlength="4" pattern="[0-9]{4,5}" placeholder="8008" spellcheck="false">
+    </label>
+  </p>
+
+  <p>
+    <label>in the voice of
+    <select id="voiceList" name="voiceList" required>
+    </select>
+    </label>
+  </p>
+
+  <p>
+    <button type="button" id="read">Read</button>
+    <button type="button" id="pause">Pause</button>
+    <button type="button" id="resume">Resume</button>
+    <button type="button" id="cancel">Cancel</button>
+  </p>
+</form>
+
+</main>
+
+<script>
+const form = document.querySelector('#reader');
+const voiceList = document.querySelector('#voiceList');
+const read = document.querySelector('#read');
+const pause = document.querySelector('#pause');
+const resume = document.querySelector('#resume');
+const cancel = document.querySelector('#cancel');
+const speaker = window.speechSynthesis;
+
+/*
+ * Populate #voiceList with the available voices.
+ */
+function getVoices() {
+  let voices = speaker.getVoices(),
+      markup = [],
+      i = 0,
+      language;
+
+  if (voices.length > 0) {
+    for (let voice of voices) {
+      if ((language == null) || (!voice.lang.toLowerCase().startsWith(language))) {
+        // If first voice or voice is for a new language
+        if (language != null) {
+          markup.push('      </optgroup>');
+        }
+        language = voice.lang.substring(0, 2).toLowerCase();
+        markup.push(`      <optgroup label="${ voice.name.substring(0, voice.name.indexOf(' ')) }">`);
+      }
+      markup.push(`        <option value="${ i }">${ voice.name } (${ voice.lang })</option>`);
+      i++;
+    }
+    if (language != null) {
+      markup.push('      </optgroup>');
+    }
+    voiceList.innerHTML = markup.join('\n');
+  }
+}
+
+window.addEventListener('load', (event) => {
+  getVoices();
+});
+read.addEventListener('click', (event) => {
+  let utterance = new SpeechSynthesisUtterance(form.amount.value),
+      voices = speaker.getVoices();
+
+  if (voices.length > 0) {
+    utterance.voice = voices[parseInt(form.voiceList.value, 10)];
+    speaker.speak(utterance);
+  }
+});
+pause.addEventListener('click', (event) => {
+  speaker.pause();
+});
+resume.addEventListener('click', (event) => {
+  speaker.resume();
+});
+cancel.addEventListener('click', (event) => {
+  speaker.cancel();
+});
+
+/*
+ * Listen for changes in server-side synthesis when the voices are determined asynchronously.
+ */
+speaker.addEventListener('voiceschanged', (event) => {
+  getVoices();
+});
+</script>
+</body>
+
+</html>
