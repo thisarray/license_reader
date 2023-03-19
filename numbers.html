@@ -21,7 +21,7 @@ body {
 <form id="reader" name="reader">
   <p>
     <label>Read the number
-    <input type="text" id="amount" name="amount" autofocus required maxlength="5" minlength="4" pattern="[0-9]{4,5}" placeholder="8008" spellcheck="false">
+    <input type="text" id="number" name="number" autofocus required maxlength="5" minlength="4" pattern="[0-9]{4,5}" placeholder="8008" spellcheck="false">
     </label>
   </p>
 
@@ -50,6 +50,57 @@ const pause = document.querySelector('#pause');
 const resume = document.querySelector('#resume');
 const cancel = document.querySelector('#cancel');
 const speaker = window.speechSynthesis;
+
+/*
+ * Regular expression matching a valid number: string of digits.
+ */
+const NUMBER_REGULAR_EXPRESSION = /^(\d+)$/;
+
+/*
+ * Map from a string digit to its string word.
+ */
+const DIGIT_MAP = new Map([
+  ['0', 'zero'],
+  ['1', 'one'],
+  ['2', 'two'],
+  ['3', 'three'],
+  ['4', 'four'],
+  ['5', 'five'],
+  ['6', 'six'],
+  ['7', 'seven'],
+  ['8', 'eight'],
+  ['9', 'nine']
+]);
+
+/*
+ * Return true if str is a length long string of digits.
+ */
+function isNumber(str, length = -1) {
+  if ((length == undefined) || (length <= 0)) {
+    return NUMBER_REGULAR_EXPRESSION.test(str);
+  }
+  else if (NUMBER_REGULAR_EXPRESSION.test(str)) {
+    return (str.length === length);
+  }
+  return false;
+}
+
+/*
+ * Return a string text from a string of digits.
+ */
+function digitsToText(digits) {
+  if (!isNumber(digits)) {
+    throw new RangeError('digits must be a non-empty string of digits.');
+  }
+
+  let result = [];
+  for (let d of digits) {
+    if (DIGIT_MAP.has(d)) {
+      result.push(DIGIT_MAP.get(d));
+    }
+  }
+  return result.join(' ');
+}
 
 /*
  * Populate #voiceList with the available voices.
@@ -84,7 +135,8 @@ window.addEventListener('load', (event) => {
   getVoices();
 });
 read.addEventListener('click', (event) => {
-  let utterance = new SpeechSynthesisUtterance(form.amount.value),
+  let numberText = digitsToText(form.number.value),
+      utterance = new SpeechSynthesisUtterance(numberText),
       voices = speaker.getVoices();
 
   if (voices.length > 0) {
