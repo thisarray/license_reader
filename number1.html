@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number Listener</title>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+output {
+  display: block;
+}
+  </style>
+</head>
+
+<body>
+
+<main>
+<h1>Number Listener</h1>
+
+<form id="listener" name="listener">
+  <button type="submit" id="listen">Listen</button>
+</form>
+
+<h2>Here is what I heard:</h2>
+
+<output id="result" name="result" for="listener"></output>
+
+</main>
+
+<script>
+/*
+ * String grammar specifying the speech to recognize.
+ */
+const GRAMMAR = `#JSGF V1.0;
+grammar numbers;
+
+public <digit> = zero | one | two | three | four | five | six | seven | eight | nine;`;
+//public <digits> = <digit>+;
+
+const form = document.querySelector('#listener');
+const output = document.querySelector('#result');
+form.addEventListener('submit', (event) => {
+  if (!window.SpeechRecognition) {
+    event.preventDefault();
+    return;
+  }
+
+  let speechGrammarList = new (window.SpeechGrammarList || window.webkitSpeechGrammarList)();
+  speechGrammarList.addFromString(GRAMMAR);
+
+  let speechRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  speechRecognition.grammars = speechGrammarList;
+  speechRecognition.continuous = false;
+  speechRecognition.lang = 'en-US';
+  speechRecognition.interimResults = false;
+
+  speechRecognition.addEventListener('result', (event) => {
+    let result = event.results[0][0].transcript.trim().toLowerCase();
+    console.log(result);
+    output.textContent = result;
+  });
+
+  speechRecognition.addEventListener('speechend', (event) => {
+    speechRecognition.stop();
+  });
+
+  event.preventDefault();
+});
+</script>
+</body>
+
+</html>
