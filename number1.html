@@ -82,13 +82,15 @@ form.addEventListener('submit', (event) => {
     log(output, 'SpeechRecognition stopped.');
   });
 
-  speechRecognition.addEventListener('nomatch', (event) => {
-    log(output, 'No match!');
-  });
-
   speechRecognition.addEventListener('error', (event) => {
     log(output, 'Error:' + event.error);
   });
+
+  for (let name of ['audiostart', 'audioend', 'end', 'nomatch', 'soundstart', 'soundend', 'speechstart', 'start']) {
+    speechRecognition.addEventListener(name, (event) => {
+      log(output, name + ' event');
+    });
+  }
 
   event.preventDefault();
 });
