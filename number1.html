@@ -53,44 +53,33 @@ const form = document.querySelector('#listener');
 const output = document.querySelector('#result');
 form.addEventListener('submit', (event) => {
   if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) {
-    log(output, 'No window.SpeechRecognition!');
     event.preventDefault();
     return;
   }
 
   let speechGrammarList = new (window.SpeechGrammarList || window.webkitSpeechGrammarList)();
   speechGrammarList.addFromString(GRAMMAR);
-  log(output, 'Created grammar.');
 
   let speechRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   speechRecognition.grammars = speechGrammarList;
   speechRecognition.continuous = false;
   speechRecognition.lang = 'en-US';
   speechRecognition.interimResults = false;
-  log(output, 'Created SpeechRecognition.');
 
   speechRecognition.start();
-  log(output, 'SpeechRecognition started.');
 
   speechRecognition.addEventListener('result', (event) => {
     let result = event.results[0][0].transcript.trim().toLowerCase();
-    log(output, 'Result:' + result);
+    log(output, result);
   });
 
   speechRecognition.addEventListener('speechend', (event) => {
     speechRecognition.stop();
-    log(output, 'SpeechRecognition stopped.');
   });
 
   speechRecognition.addEventListener('error', (event) => {
     log(output, 'Error:' + event.error);
   });
-
-  for (let name of ['audiostart', 'audioend', 'end', 'nomatch', 'soundstart', 'soundend', 'speechstart', 'start']) {
-    speechRecognition.addEventListener(name, (event) => {
-      log(output, name + ' event');
-    });
-  }
 
   event.preventDefault();
 });
